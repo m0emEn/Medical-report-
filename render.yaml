@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: backend
+    env: docker
+    plan: free
+    dockerfilePath: backend/Dockerfile
+    envVars:
+      - key: MONGO_URI
+        value: ${MONGO_URI}
+      - key: JWT_SECRET
+        value: ${JWT_SECRET}
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true
+    buildCommand: ""
+    startCommand: "npm run dev"
+    
+  - type: web
+    name: frontend
+    env: docker
+    plan: free
+    dockerfilePath: frontend/Dockerfile
+    autoDeploy: true
+    buildCommand: ""
+    startCommand: ""
+
+  - type: mongodb
+    name: medreport-db
+    plan: free
