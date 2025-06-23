@@ -22,6 +22,7 @@ app.use('/api/auth', require('./routes/auth'));
 
 app.use('/uploads', express.static('uploads'));
 app.use('/api/reports', require('./routes/reports'));
+app.use('/api/chatbot', require('./routes/chatbot'));
 
 app.get('/', (req, res) => {
   res.send('API is running');

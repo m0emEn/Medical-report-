@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+function trimThinkSection(text) {
+  // This regex removes anything between <think> and </think>, including the tags themselves
+  return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+}
 
 const Chatbot = () => {
   const { isAuthenticated } = useSelector(state => state.auth);
@@ -9,6 +15,7 @@ const Chatbot = () => {
     { from: 'bot', text: 'Hello! I am your medical assistant. How can I help you today?' },
   ]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
 
   useEffect(() => {
@@ -21,12 +28,23 @@ const Chatbot = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
-    setMessages([...messages, { from: 'user', text: input }]);
+    const userMessage = { from: 'user', text: input };
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
-    // Placeholder: No real bot response
+    setLoading(true);
+    try {
+      const res = await axios.post('/api/chatbot', { message: input });
+      const botReply = res.data.reply || 'Sorry, I could not understand.';
+      const cleanedReply = trimThinkSection(botReply);
+      setMessages(prev => [...prev, { from: 'bot', text: cleanedReply }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { from: 'bot', text: 'Sorry, there was an error contacting the AI.' }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,6 +57,11 @@ const Chatbot = () => {
               <span className={`inline-block px-4 py-2 rounded-lg ${msg.from === 'user' ? 'bg-blue-600 text-white' : 'bg-blue-200 text-blue-900'}`}>{msg.text}</span>
             </div>
           ))}
+          {loading && (
+            <div className="mb-2 flex justify-start">
+              <span className="inline-block px-4 py-2 rounded-lg bg-blue-200 text-blue-900">Thinking...</span>
+            </div>
+          )}
           <div ref={chatEndRef} />
         </div>
         <form onSubmit={handleSend} className="flex gap-2">
@@ -48,8 +71,9 @@ const Chatbot = () => {
             placeholder="Type your message..."
             value={input}
             onChange={e => setInput(e.target.value)}
+            disabled={loading}
           />
-          <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">Send</button>
+          <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition" disabled={loading}>Send</button>
         </form>
       </div>
     </section>
