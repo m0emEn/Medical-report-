@@ -24,6 +24,4 @@ services:
     buildCommand: ""
     startCommand: ""
 
-  - type: mongodb
-    name: medreport-db
-    plan: free
+  
