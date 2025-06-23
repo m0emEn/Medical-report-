@@ -13,7 +13,6 @@ services:
         value: production
     autoDeploy: true
     buildCommand: ""
-    startCommand: "npm run dev"
     
   - type: web
     name: frontend
@@ -22,6 +21,5 @@ services:
     dockerfilePath: frontend/Dockerfile
     autoDeploy: true
     buildCommand: ""
-    startCommand: ""
 
   
